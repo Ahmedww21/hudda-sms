@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { useState, useEffect } from "react"
-import { supabase } from "../lib/supabase"
-import { useAuth } from "../lib/auth-context"
+import { createFileRoute } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/auth-context'
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   component: DashboardPage,
 })
 
@@ -27,14 +27,14 @@ function DashboardPage() {
   async function fetchStudents() {
     try {
       const { data, error } = await supabase
-        .from("students")
-        .select("*")
-        .order("created_at", { ascending: false })
+        .from('students')
+        .select('*')
+        .order('created_at', { ascending: false })
 
       if (error) throw error
       if (data) setStudents(data)
     } catch (err) {
-      console.error("Error loading students:", err)
+      console.error('Error loading students:', err)
     } finally {
       setLoading(false)
     }
@@ -46,11 +46,11 @@ function DashboardPage() {
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-sky-400">HUDDA SMS</h1>
           <span className="rounded-full bg-sky-900/50 px-3 py-1 text-xs font-semibold text-sky-300 border border-sky-700">
-            Role: {role ? role.toUpperCase() : "GUEST"}
+            Role: {role ? role.toUpperCase() : 'GUEST'}
           </span>
         </div>
         <div className="flex items-center space-x-4">
-          <span className="text-sm text-slate-400">{user?.email ?? "Guest"}</span>
+          <span className="text-sm text-slate-400">{user?.email ?? 'Guest'}</span>
           <button
             onClick={signOut}
             className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition"
@@ -88,7 +88,7 @@ function DashboardPage() {
               <h2 className="text-lg font-semibold text-white">Student Directory</h2>
               <p className="text-sm text-slate-400">Manage enrolled students and academic profiles.</p>
             </div>
-            {role === "admin" && (
+            {role === 'admin' && (
               <button className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 transition shadow">
                 + Add Student
               </button>
@@ -101,7 +101,7 @@ function DashboardPage() {
             ) : students.length === 0 ? (
               <div className="py-12 text-center text-slate-500">
                 <p>No students found in database.</p>
-                <p className="text-xs mt-1 text-slate-600">Insert sample rows in your Supabase "students" table to populate this view.</p>
+                <p className="text-xs mt-1 text-slate-600">Insert sample rows in your Supabase 'students' table to populate this view.</p>
               </div>
             ) : (
               <table className="w-full text-left text-sm text-slate-300">
@@ -120,7 +120,7 @@ function DashboardPage() {
                       <td className="px-4 py-3 text-slate-400">{st.email}</td>
                       <td className="px-4 py-3">
                         <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-sky-300 border border-slate-700">
-                          {st.grade || "N/A"}
+                          {st.grade || 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-slate-500">
