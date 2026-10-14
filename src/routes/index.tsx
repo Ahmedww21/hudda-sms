@@ -1,87 +1,143 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/auth-context'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  component: DashboardPage,
+})
 
-function App() {
+interface Student {
+  id: string
+  name: string
+  email: string
+  grade: string
+  created_at: string
+}
+
+function DashboardPage() {
+  const { user, role, signOut } = useAuth()
+  const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchStudents()
+  }, [])
+
+  async function fetchStudents() {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      if (data) setStudents(data)
+    } catch (err) {
+      console.error('Error loading students:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">TanStack Start Base Template</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Start simple, ship quickly.
-        </h1>
-        <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          This base starter intentionally keeps things light: two routes, clean
-          structure, and the essentials you need to build from scratch.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/about"
-            className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
-          >
-            About This Starter
-          </a>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
-          >
-            Router Guide
-          </a>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+      {/* Top Navigation */}
+      <header className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-xl font-bold text-sky-400">HUDDA SMS</h1>
+          <span className="rounded-full bg-sky-900/50 px-3 py-1 text-xs font-semibold text-sky-300 border border-sky-700">
+            Role: {role.toUpperCase()}
+          </span>
         </div>
-      </section>
-
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [
-            'Type-Safe Routing',
-            'Routes and links stay in sync across every page.',
-          ],
-          [
-            'Server Functions',
-            'Call server code from your UI without creating API boilerplate.',
-          ],
-          [
-            'Streaming by Default',
-            'Ship progressively rendered responses for faster experiences.',
-          ],
-          [
-            'Tailwind Native',
-            'Design quickly with utility-first styling and reusable tokens.',
-          ],
-        ].map(([title, desc], index) => (
-          <article
-            key={title}
-            className="island-shell feature-card rise-in rounded-2xl p-5"
-            style={{ animationDelay: `${index * 90 + 80}ms` }}
+        <div className="flex items-center space-x-4">
+          <span className="text-sm text-slate-400">{user?.email ?? 'Guest'}</span>
+          <button
+            onClick={signOut}
+            className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition"
           >
-            <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">
-              {title}
-            </h2>
-            <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
-          </article>
-        ))}
-      </section>
+            Sign Out
+          </button>
+        </div>
+      </header>
 
-      <section className="island-shell mt-8 rounded-2xl p-6">
-        <p className="island-kicker mb-2">Quick Start</p>
-        <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-[var(--sea-ink-soft)]">
-          <li>
-            Edit <code>src/routes/index.tsx</code> to customize the home page.
-          </li>
-          <li>
-            Update <code>src/components/Header.tsx</code> and{' '}
-            <code>src/components/Footer.tsx</code> for brand links.
-          </li>
-          <li>
-            Add routes in <code>src/routes</code> and tweak visual tokens in{' '}
-            <code>src/styles.css</code>.
-          </li>
-        </ul>
-      </section>
-    </main>
+      {/* Main Content Area */}
+      <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Students</p>
+            <p className="mt-2 text-3xl font-bold text-white">{students.length}</p>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Teachers</p>
+            <p className="mt-2 text-3xl font-bold text-emerald-400">12</p>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Classes</p>
+            <p className="mt-2 text-3xl font-bold text-indigo-400">8</p>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">System Status</p>
+            <p className="mt-2 text-sm font-semibold text-emerald-400 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> Operational
+            </p>
+          </div>
+        </div>
+
+        {/* Student Directory Table Section */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Student Directory</h2>
+              <p className="text-sm text-slate-400">Manage enrolled students and academic profiles.</p>
+            </div>
+            {role === 'admin' && (
+              <button className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 transition shadow">
+                + Add Student
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4 overflow-x-auto">
+            {loading ? (
+              <div className="py-8 text-center text-slate-500">Loading student records...</div>
+            ) : students.length === 0 ? (
+              <div className="py-12 text-center text-slate-500">
+                <p>No students found in database.</p>
+                <p className="text-xs mt-1 text-slate-600">Insert sample rows in your Supabase 'students' table to populate this view.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-sm text-slate-300">
+                <thead className="bg-slate-800/50 text-xs uppercase text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Grade</th>
+                    <th className="px-4 py-3">Date Added</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {students.map((st) => (
+                    <tr key={st.id} className="hover:bg-slate-800/30 transition">
+                      <td className="px-4 py-3 font-medium text-white">{st.name}</td>
+                      <td className="px-4 py-3 text-slate-400">{st.email}</td>
+                      <td className="px-4 py-3">
+                        <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-sky-300 border border-slate-700">
+                          {st.grade || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500">
+                        {new Date(st.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   )
 }
