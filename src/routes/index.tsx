@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth-context'
@@ -42,12 +42,11 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navigation */}
       <header className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-sky-400">HUDDA SMS</h1>
           <span className="rounded-full bg-sky-900/50 px-3 py-1 text-xs font-semibold text-sky-300 border border-sky-700">
-            Role: {role.toUpperCase()}
+            Role: {role ? role.toUpperCase() : 'GUEST'}
           </span>
         </div>
         <div className="flex items-center space-x-4">
@@ -61,9 +60,7 @@ function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Students</p>
@@ -85,7 +82,6 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Student Directory Table Section */}
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
           <div className="flex items-center justify-between pb-4 border-b border-slate-800">
             <div>
