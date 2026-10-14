@@ -20,6 +20,13 @@ function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [grade, setGrade] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
   useEffect(() => {
     fetchStudents()
   }, [])
@@ -40,8 +47,36 @@ function DashboardPage() {
     }
   }
 
+  async function handleAddStudent(e: React.FormEvent) {
+    e.preventDefault()
+
+    setSubmitting(true)
+    try {
+      const { error } = await supabase
+        .from('students')
+        .insert([{ name, email, grade: grade || '10th Grade' }])
+
+      if (error) throw error
+
+      // Reset form and close modal
+      setName('')
+      setEmail('')
+      setGrade('')
+      setIsModalOpen(false)
+      
+      // Refresh student list
+      fetchStudents()
+    } catch (err) {
+      console.error('Error inserting student:', err)
+      alert('Failed to add student. Please check database permissions or console.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-sky-400">HUDDA SMS</h1>
@@ -60,7 +95,9 @@ function DashboardPage() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
+        {/* Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm">
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Students</p>
@@ -82,6 +119,7 @@ function DashboardPage() {
           </div>
         </div>
 
+        {/* Student Directory Table */}
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
           <div className="flex items-center justify-between pb-4 border-b border-slate-800">
             <div>
@@ -89,7 +127,10 @@ function DashboardPage() {
               <p className="text-sm text-slate-400">Manage enrolled students and academic profiles.</p>
             </div>
             {role === 'admin' && (
-              <button className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 transition shadow">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 transition shadow"
+              >
                 + Add Student
               </button>
             )}
@@ -101,7 +142,7 @@ function DashboardPage() {
             ) : students.length === 0 ? (
               <div className="py-12 text-center text-slate-500">
                 <p>No students found in database.</p>
-                <p className="text-xs mt-1 text-slate-600">Insert sample rows in your Supabase 'students' table to populate this view.</p>
+                <p className="text-xs mt-1 text-slate-600">Click '+ Add Student' above to insert your first record.</p>
               </div>
             ) : (
               <table className="w-full text-left text-sm text-slate-300">
@@ -134,6 +175,77 @@ function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Add Student Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-lg font-semibold text-white">Add New Student</h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-white text-xl font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Leyla Yılmaz"
+                  className="w-full rounded-lg bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-sky-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g., leyla@student.arel.edu.tr"
+                  className="w-full rounded-lg bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-sky-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-450 uppercase tracking-wider mb-1">Grade Level</label>
+                <input
+                  type="text"
+                  value={grade}
+                  onChange={(e) => setGrade(e.target.value)}
+                  placeholder="e.g., 10th Grade / Freshman"
+                  className="w-full rounded-lg bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-slate-200 focus:border-sky-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 transition disabled:opacity-50"
+                >
+                  {submitting ? 'Saving...' : 'Save Student'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
